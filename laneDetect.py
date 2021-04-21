@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pl
 
 
 def canny_edge_detector(image):
@@ -51,6 +51,8 @@ def average_slope_intercept(image, lines):
             right_fit.append((slope, intercept))
     left_fit_average = np.average(left_fit, axis=0)
     right_fit_average = np.average(right_fit, axis=0)
+    if (left_fit == [] or right_fit == []):
+        return False
     left_line = create_coordinates(image, left_fit_average)
     right_line = create_coordinates(image, right_fit_average)
     return np.array([left_line, right_line])
@@ -68,10 +70,12 @@ def display_lines(image, lines):
 def detectLaneCoordiantes(frame):
     canny_image = canny_edge_detector(frame)
     cropped_image = region_of_interest(canny_image)
+    
     lines = cv2.HoughLinesP(cropped_image, 1, np.pi / 180, 100, np.array([]), minLineLength=40, maxLineGap=5)
-    if (lines is None):
-        return 0
-    averaged_lines = average_slope_intercept(frame, lines)
+    if (lines is not None and len(lines) > 1):
+        averaged_lines = average_slope_intercept(frame, lines)
+    else:
+        averaged_lines = False
     # line_image = display_lines(frame, averaged_lines)
     # combo_image = cv2.addWeighted(frame, 0.8, line_image, 1, 1)
     return averaged_lines
